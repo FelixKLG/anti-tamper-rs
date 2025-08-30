@@ -1,0 +1,15 @@
+[package]
+name = "ltdeb"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.99"
+sha2 = "0.10.9"
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+debug = false
+lto = true
+strip = true
