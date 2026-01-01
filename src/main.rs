@@ -10,15 +10,25 @@ fn main() -> anyhow::Result<()> {
     let mut exe_data = fs::read(current_exe)?;
 
     let magic = &anti_tamper::HASH_LOCATION.magic;
+    let pad = &anti_tamper::HASH_LOCATION.sanity;
+
+    let bojingle: Vec<u8> = [magic.as_slice(), pad.as_slice()].concat();
 
     let positions: Vec<_> = exe_data
-        .windows(magic.len())
+        .windows(magic.len() + pad.len())
         .enumerate()
-        .filter_map(|(i, window)| if window == magic { Some(i) } else { None })
+        .filter_map(|(i, window)| {
+            if window == bojingle.as_slice() {
+                Some(i)
+            } else {
+                None
+            }
+        })
         .collect();
 
     for pos in positions {
-        let starting_pos = pos + anti_tamper::HASH_LOCATION.magic.len();
+        let starting_pos =
+            pos + anti_tamper::HASH_LOCATION.sanity.len() + anti_tamper::HASH_LOCATION.magic.len();
         let ending_pos = starting_pos + anti_tamper::HASH_LOCATION.hash.len();
 
         println!("Magic Bytes Pos: {}", pos);
